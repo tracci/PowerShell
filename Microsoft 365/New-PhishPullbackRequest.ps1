@@ -40,7 +40,7 @@
     .NOTES
     Created on:     2022-03-07
     Created by:     tracci
-    Organization:   For GitHub   
+    Organization:   public   
 #>
 
 function New-PhishPullbackRequest {
