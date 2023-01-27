@@ -30,17 +30,17 @@
     This will check the status of the search every three minutes and begin a purge upon completion.
     
     .EXAMPLE
-    New-PhishPullbackRequest -Ticket 11223344 -Sender "al.gator@ufl.edu" -Subject "Do not open" -SentAfter "March 7 2022 7:00 AM" -AutoPurge
-    New-PhishPullbackRequest -Ticket 11223355 -Sender "al.gator@ufl.edu" -Subject "Please close" -SentBefore "March 5 2022 8:00 AM" -FileExtenion PDF
-    New-PhishPullbackRequest -SearchName "Pullback test" -Sender gl@ufl.edu -Subject "Not a test" -SentAfter "March 3 2022 7:00 AM" -SentBefore "March 3 2022 8:00 AM"
+    New-PhishPullbackRequest -Ticket 11223344 -Sender "al.b.sure@domain.com" -Subject "Do not open" -SentAfter "March 7 2022 7:00 AM" -AutoPurge
+    New-PhishPullbackRequest -Ticket 11223355 -Sender "al.b.sure@domain.com" -Subject "Please close" -SentBefore "March 5 2022 8:00 AM" -FileExtenion PDF
+    New-PhishPullbackRequest -SearchName "Pullback test" -Sender gl@domain.com -Subject "Not a test" -SentAfter "March 3 2022 7:00 AM" -SentBefore "March 3 2022 8:00 AM"
     
     .COMPONENT
     Requires Compliance Admin access in Office 365
 
     .NOTES
     Created on:     2022-03-07
-    Created by:     Tony Raccioppi
-    Organization:   University of Florida   
+    Created by:     tracci
+    Organization:   For GitHub   
 #>
 
 function New-PhishPullbackRequest {
@@ -64,7 +64,7 @@ function New-PhishPullbackRequest {
 
     # Validate input and set KQL format
     # KQL example string:
-    # (c:c)(senderauthor="gatorlink@ufl.edu")(subjecttitle="Don't open this")(sent>2022-02-22T10:00:00)(filetype=pdf)
+    # (c:c)(senderauthor="user@domain.com")(subjecttitle="Don't open this")(sent>2022-02-22T10:00:00)(filetype=pdf)
 
     if ($Ticket) {
         $SearchName = "Phish pullback $Ticket"
