@@ -20,10 +20,18 @@
     .PARAMETER HideEmptyFolders
     If this is active, the report will exclude any folders where 'ItemsInFolder' is zero.
 
+    .PARAMETER Archive
+    If this is active, the report will generate folders from the user's archive mailbox.
+
+    .PARAMETER ResultSize
+    Set the folder result size. Default is 1000 folders. Use "Unlimited" to output all folders without limit.
+
     .EXAMPLE
     Get-MailboxFolderSize -Mailbox alb.sure@domain.com
     Get-MailboxFolderSize -Mailbox alb.sure@domain.com -FolderScope RecoverableItems
     Get-MailboxFolderSize -Mailbox alb.sure@domain.com -FolderScope Inbox -OutputAs GB -HideEmptyFolders
+    Get-MailboxFolderSize -Mailbox alb.sure@domain.com -Archive
+    Get-MailboxFolderSize -Mailbox alb.sure@domain.com -FolderScope All -OutputAs MB -HideEmptyFolders -ResultSize Unlimited
     
     .COMPONENT
     Requires ExchangeOnline module v2.0.6-Preview7 or later for the Get-ConnectionInformation check
@@ -71,13 +79,16 @@ function Get-MailboxFolderSize {
         [string]$OutputAs,
         [ValidateSet("Folder", "Items", "Size")]
         [string]$SortBy,
-        [switch]$HideEmptyFolders
+        [switch]$HideEmptyFolders,
+        [switch]$Archive,
+        [string]$ResultSize
     )
 
     # Set some default values if not provided
     if ([string]::IsNullOrEmpty($FolderScope)) { $FolderScope = "All" }
     if ([string]::IsNullOrEmpty($OutputAs)) { $OutputAs = "MB" }
     if ([string]::IsNullOrEmpty($SortBy)) { $SortBy = "Size" }
+    if ([string]::IsNullOrEmpty($ResultSize)) { $ResultSize = 1000 }
 
     $AllOutput = New-Object System.Collections.ArrayList
 
@@ -85,26 +96,57 @@ function Get-MailboxFolderSize {
         Connect-ExchangeOnline
     }
 
+    if ($ResultSize -ne 'Unlimited') {
+        try { $ResultSize = [int]::Parse($ResultSize) }
+        catch {
+            Write-Warning $_.Exception.Message 
+            break
+        }
+        if ($ResultSize -le 0) {
+            Write-Error "ResultSize must be greater than 0"
+            break
+        }
+    }
+    
+    $FolderParams = @{
+        Identity    = $Mailbox
+        FolderScope = $FolderScope
+        ResultSize  = $ResultSize
+        ErrorAction = "Stop"
+    }
+
+    if ($Archive) {
+        $ArchiveStatus = (Get-Mailbox $Mailbox).ArchiveDatabase
+        if ($ArchiveStatus) {
+            $FolderParams.Add("Archive", $true)
+        }
+        else { Write-Output "Archive mailbox not found for $Mailbox. Getting results for active mailbox..." }
+    }
+
+    $MinItems = 0
     if ($HideEmptyFolders) {
-        try { 
-            $MBStats = Get-ExoMailboxFolderStatistics $Mailbox -FolderScope $FolderScope -ErrorAction Stop | 
-            Where-Object { $_.ItemsInFolder -gt 0 } | 
-            Select-Object FolderPath, ItemsInFolder, FolderSize
-        }
-        catch { Write-Warning "Error: $($_.Exception.Message)" }
+        $MinItems = 1
     }
-    else {
-        try { 
-            $MBStats = Get-ExoMailboxFolderStatistics $Mailbox -FolderScope $FolderScope -ErrorAction Stop | 
-            Select-Object FolderPath, ItemsInFolder, FolderSize
-        }
-        catch { Write-Warning "Error: $($_.Exception.Message)" }
+   
+    try { 
+        $MBStats = Get-MailboxFolderStatistics @FolderParams |
+        Where-Object { $_.ItemsInFolder -ge $MinItems } | 
+        Select-Object Identity, FolderType, ItemsInFolder, FolderSize
     }
+    catch { 
+        Write-Warning "Error: $($_.Exception.Message)" 
+        break
+    }
+
     if ($MBStats) {
+        if ($MBStats.Count -eq 1000) {
+            Write-Warning "1000 folder limit. Use '-ResultSize Unlimited' for all folders."
+        }
         foreach ($i in $MBStats) {
             $Converted = Convert-Bytes -FolderSize $i.FolderSize -OutputAs $OutputAs
             $MBOutput = [PSCustomObject]@{
-                Folder                   = "$Mailbox/Inbox$($i.FolderPath)"
+                Folder                   = $i.Identity
+                FolderType               = $i.FolderType
                 ItemsInFolder            = $i.ItemsInFolder
                 "FolderSize ($OutputAs)" = $Converted
             }
@@ -115,5 +157,8 @@ function Get-MailboxFolderSize {
             "Items" { $AllOutput | Sort-Object ItemsInFolder -Descending }
             "Size" { $AllOutput | Sort-Object "FolderSize ($OutputAs)" -Descending }
         }
+    }
+    else {
+        Write-Output "No mailbox data found with those parameters."
     }
 }
