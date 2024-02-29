@@ -103,7 +103,7 @@ function Get-MailboxFolderSize {
             break
         }
         if ($ResultSize -le 0) {
-            Write-Error "ResultSize must be greater than 0"
+            Write-Warning "ResultSize must be greater than 0"
             break
         }
     }
