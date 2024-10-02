@@ -1,47 +1,3 @@
-<#
-    .SYNOPSIS
-    Gets mailbox folder size for a user.
-    
-    .DESCRIPTION
-    Gets mailbox folder size for a user and outputs as requested. Size can be output as KB, MB, GB, or TB to two decimal places.
-    
-    .PARAMETER Mailbox
-    Email address of the mailbox to check.
-
-    .PARAMETER FolderScope
-    Which mailbox folder to check: All (default), Calendar, DeletedItems, Inbox, JunkEmail, RecoverableItems.
-
-    .PARAMETER OutputAs
-    Which units to display size as: MB (default), KB, GB, or TB.
-
-    .PARAMETER SortBy
-    How to sort the output: Size (default), Items, or Folder
-
-    .PARAMETER HideEmptyFolders
-    If this is active, the report will exclude any folders where 'ItemsInFolder' is zero.
-
-    .PARAMETER Archive
-    If this is active, the report will generate folders from the user's archive mailbox.
-
-    .PARAMETER ResultSize
-    Set the folder result size. Default is 1000 folders. Use "Unlimited" to output all folders without limit.
-
-    .EXAMPLE
-    Get-MailboxFolderSize -Mailbox alb.sure@domain.com
-    Get-MailboxFolderSize -Mailbox alb.sure@domain.com -FolderScope RecoverableItems
-    Get-MailboxFolderSize -Mailbox alb.sure@domain.com -FolderScope Inbox -OutputAs GB -HideEmptyFolders
-    Get-MailboxFolderSize -Mailbox alb.sure@domain.com -Archive
-    Get-MailboxFolderSize -Mailbox alb.sure@domain.com -FolderScope All -OutputAs MB -HideEmptyFolders -ResultSize Unlimited
-    
-    .COMPONENT
-    Requires ExchangeOnline module 3.0.0 or later for the Get-ConnectionInformation check
-
-    .NOTES
-    Created on:     2022-10-18
-    Created by:     tracci
-    Organization:   public 
-#>
-
 # Check for modules
 #Requires -Modules @{ ModuleName="ExchangeOnlineManagement"; ModuleVersion="3.0.0" }
 
@@ -69,6 +25,49 @@ function Convert-Bytes {
 }
 
 function Get-MailboxFolderSize {
+    <#
+        .SYNOPSIS
+        Gets mailbox folder size for a user.
+    
+        .DESCRIPTION
+        Gets mailbox folder size for a user and outputs as requested. Size can be output as KB, MB, GB, or TB to two decimal places.
+    
+        .PARAMETER Mailbox
+        Email address of the mailbox to check.
+
+        .PARAMETER FolderScope
+        Which mailbox folder to check: All (default), Calendar, DeletedItems, Inbox, JunkEmail, RecoverableItems.
+
+        .PARAMETER OutputAs
+        Which units to display size as: MB (default), KB, GB, or TB.
+
+        .PARAMETER SortBy
+        How to sort the output: Size (default), Items, or Folder
+
+        .PARAMETER HideEmptyFolders
+        If this is active, the report will exclude any folders where 'ItemsInFolder' is zero.
+
+        .PARAMETER Archive
+        If this is active, the report will generate folders from the user's archive mailbox.
+
+        .PARAMETER ResultSize
+        Set the folder result size. Default is 1000 folders. Use "Unlimited" to output all folders without limit.
+
+        .EXAMPLE
+        Get-MailboxFolderSize -Mailbox alb.sure@domain.com
+        Get-MailboxFolderSize -Mailbox alb.sure@domain.com -FolderScope RecoverableItems
+        Get-MailboxFolderSize -Mailbox alb.sure@domain.com -FolderScope Inbox -OutputAs GB -HideEmptyFolders
+        Get-MailboxFolderSize -Mailbox alb.sure@domain.com -Archive
+        Get-MailboxFolderSize -Mailbox alb.sure@domain.com -FolderScope All -OutputAs MB -HideEmptyFolders -ResultSize Unlimited
+    
+        .COMPONENT
+        Requires ExchangeOnline module 3.0.0 or later for the Get-ConnectionInformation check
+
+        .NOTES
+        Created on:     2022-10-18
+        Created by:     tracci
+        Organization:   public 
+    #>
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory)]
