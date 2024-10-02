@@ -34,7 +34,7 @@
     Get-MailboxFolderSize -Mailbox alb.sure@domain.com -FolderScope All -OutputAs MB -HideEmptyFolders -ResultSize Unlimited
     
     .COMPONENT
-    Requires ExchangeOnline module v2.0.6-Preview7 or later for the Get-ConnectionInformation check
+    Requires ExchangeOnline module 3.0.0 or later for the Get-ConnectionInformation check
 
     .NOTES
     Created on:     2022-10-18
@@ -43,7 +43,7 @@
 #>
 
 # Check for modules
-#Requires -Modules @{ ModuleName="ExchangeOnlineManagement"; ModuleVersion="2.0.6" }
+#Requires -Modules @{ ModuleName="ExchangeOnlineManagement"; ModuleVersion="3.0.0" }
 
 function Convert-Bytes {
     # This function is to convert the ExchangeOnline size output to an integer that we can work with.
@@ -103,18 +103,18 @@ function Get-MailboxFolderSize {
             break
         }
         if ($ResultSize -le 0) {
-            Write-Warning "ResultSize must be greater than 0"
+            Write-Error "ResultSize must be greater than 0"
             break
         }
     }
-    
+
     $FolderParams = @{
         Identity    = $Mailbox
         FolderScope = $FolderScope
         ResultSize  = $ResultSize
         ErrorAction = "Stop"
     }
-
+    
     if ($Archive) {
         $ArchiveStatus = (Get-Mailbox $Mailbox).ArchiveDatabase
         if ($ArchiveStatus) {
@@ -122,7 +122,7 @@ function Get-MailboxFolderSize {
         }
         else { Write-Output "Archive mailbox not found for $Mailbox. Getting results for active mailbox..." }
     }
-
+    
     $MinItems = 0
     if ($HideEmptyFolders) {
         $MinItems = 1
