@@ -13,7 +13,7 @@
     Example: "Cherwell Client" (Cherwell app)
     
     .PARAMETER Process
-    Process is the name of the process to stop prior to the uninstall, as outlined by the "ProcessName" value.
+    The name of the process to stop prior to the uninstall, as outlined by the "ProcessName" value.
     Example: "Trebuchet.App" (Cherwell proc)
     
     .EXAMPLE
